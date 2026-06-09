@@ -1,11 +1,283 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import Roulette from '../components/Roulette';
+import Voting from '../components/Voting';
+import MenuPreview from '../components/MenuPreview';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const user = Astro.locals.user;
+const supabase = Astro.locals.supabase;
+
+let items: any[] = [];
+let profile: { full_name: string } | null = null;
+let dates: { id: string; label: string; votes: number }[] = [];
+let userAssigned: any = null;
+let userVote: string | null = null;
+let assignedCount = 0;
+let totalCount = 0;
+
+if (user) {
+  const [
+    { data: itemsData },
+    { data: profileData },
+    { data: allDates },
+    { data: allVotes },
+  ] = await Promise.all([
+    supabase
+      .from('items')
+      .select('id, name, status, assigned_to, profiles(full_name)')
+      .order('name'),
+    supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+    supabase.from('dates').select('id, label').order('created_at'),
+    supabase.from('votes').select('date_id, user_id'),
+  ]);
+
+  items = itemsData ?? [];
+  profile = profileData;
+  userAssigned = items.find((i) => i.assigned_to === user.id) ?? null;
+  userVote = allVotes?.find((v: any) => v.user_id === user.id)?.date_id ?? null;
+  dates = (allDates ?? []).map((d: any) => ({
+    id: d.id,
+    label: d.label,
+    votes: allVotes?.filter((v: any) => v.date_id === d.id).length ?? 0,
+  }));
+  assignedCount = items.filter((i) => i.status === 'assigned').length;
+  totalCount = items.length;
+}
+
+const HORNO = ['Juan Torrentera', 'Lili', 'Juan'];
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+{user ? (
+  <Layout title="Molletiza 🫓">
+
+    <!-- Header -->
+    <header class="border-b border-amber-100 sticky top-0 bg-[#FFFCF5]/95 backdrop-blur-sm z-20">
+      <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5 shrink-0">
+          <span class="text-xl">🫓</span>
+          <h1 class="text-lg font-semibold tracking-tight text-stone-900">Molletiza</h1>
+          <span class="text-xs text-amber-500 hidden sm:block font-medium">Evento privado</span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-6">
+          <a href="#menu" class="text-sm text-stone-500 hover:text-amber-600 transition-colors">
+            El menu del dia
+          </a>
+          <a href="#asignaciones" class="text-sm text-stone-500 hover:text-amber-600 transition-colors">
+            Quien trae que
+          </a>
+        </nav>
+
+        <div class="flex items-center gap-4 shrink-0">
+          <span class="text-sm text-stone-500 hidden sm:block">
+            {profile?.full_name ?? user.email}
+          </span>
+          <form action="/api/auth/signout" method="POST">
+            <button
+              type="submit"
+              class="text-sm text-stone-400 hover:text-stone-800 transition-colors"
+            >
+              Salir
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-8">
+
+      <!-- Anuncio del horno -->
+      <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 mb-10 flex items-center gap-4">
+        <span class="text-3xl shrink-0">🔥</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-amber-900">El horno lo ponen</p>
+          <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+            {HORNO.map((name) => (
+              <span class="text-sm text-amber-700">{name}</span>
+            ))}
+          </div>
+        </div>
+        <span class="text-2xl shrink-0 opacity-40">🧀</span>
+      </div>
+
+      <!-- Ruleta + Votacion -->
+      <div class="grid md:grid-cols-2 gap-10 mb-14">
+        <section>
+          <div class="mb-6">
+            <h2 class="text-base font-semibold text-stone-900">Tu ingrediente</h2>
+            <p class="text-sm text-stone-500 mt-0.5">
+              {userAssigned
+                ? `Traes: ${userAssigned.name} ✓`
+                : 'Gira la ruleta para que te asignen que traer'}
+            </p>
+          </div>
+          <Roulette
+            client:load
+            items={items}
+            userId={user.id}
+            userAssigned={userAssigned}
+          />
+        </section>
+
+        <section>
+          <div class="mb-6">
+            <h2 class="text-base font-semibold text-stone-900">Cuando nos vemos?</h2>
+            <p class="text-sm text-stone-500 mt-0.5">
+              {userVote ? 'Tu voto fue registrado ✓' : 'Vota por tu fecha preferida'}
+            </p>
+          </div>
+          <Voting client:load dates={dates} userVote={userVote} />
+        </section>
+      </div>
+
+      <!-- Menu y matematicas -->
+      <section id="menu" class="mb-14 scroll-mt-20">
+        <MenuPreview />
+      </section>
+
+      <!-- Tabla: quien trae que -->
+      <section id="asignaciones" class="scroll-mt-20">
+        <div class="flex items-baseline justify-between mb-4">
+          <h2 class="text-base font-semibold text-stone-900">Quien trae que</h2>
+          <span class="text-xs text-stone-400">
+            {assignedCount} de {totalCount} asignados
+          </span>
+        </div>
+
+        <div class="border border-amber-100 rounded-2xl overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-amber-100 bg-amber-50/60">
+                <th class="text-left text-xs font-medium text-stone-400 tracking-wider px-4 py-3">
+                  Ingrediente
+                </th>
+                <th class="text-left text-xs font-medium text-stone-400 tracking-wider px-4 py-3">
+                  Quien lo trae?
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-amber-50">
+              {items.map((item) => {
+                const quien = (item as any).profiles?.full_name ?? null;
+                const esYo  = item.assigned_to === user.id;
+                return (
+                  <tr class={`transition-colors ${esYo ? 'bg-amber-50/40' : 'hover:bg-amber-50/30'}`}>
+                    <td class="px-4 py-3 text-stone-800 font-medium">{item.name}</td>
+                    <td class="px-4 py-3">
+                      {quien ? (
+                        <span class={`inline-flex items-center gap-1.5 text-sm ${esYo ? 'text-amber-700 font-semibold' : 'text-stone-600'}`}>
+                          {esYo && <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />}
+                          {quien}{esYo ? ' (tu)' : ''}
+                        </span>
+                      ) : (
+                        <span class="text-xs text-stone-300">Disponible</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </Layout>
+) : (
+  <Layout title="Molletiza — Bienvenido 🫓">
+    <main class="min-h-screen bg-[#FFFCF5] flex flex-col">
+
+      <!-- Floating food decoration -->
+      <div class="fixed inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+        <span class="absolute text-5xl opacity-10 top-[8%] left-[6%] rotate-[-15deg] animate-float-1">🧀</span>
+        <span class="absolute text-4xl opacity-10 top-[15%] right-[8%] rotate-[12deg] animate-float-2">🌶️</span>
+        <span class="absolute text-6xl opacity-10 top-[42%] left-[3%] rotate-[8deg] animate-float-3">🍞</span>
+        <span class="absolute text-4xl opacity-10 bottom-[22%] right-[5%] rotate-[-10deg] animate-float-2">🫘</span>
+        <span class="absolute text-5xl opacity-10 bottom-[10%] left-[12%] rotate-[6deg] animate-float-1">🍅</span>
+        <span class="absolute text-3xl opacity-10 top-[60%] right-[12%] rotate-[-8deg] animate-float-3">🥩</span>
+      </div>
+
+      <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+
+        <div class="inline-flex items-center gap-2 bg-amber-100 border border-amber-200 text-amber-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-wide uppercase">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+          Evento privado · 26 invitados
+        </div>
+
+        <div class="relative mb-8">
+          <div class="w-28 h-28 rounded-[2rem] bg-amber-100 border-2 border-amber-200 flex items-center justify-center text-6xl shadow-lg shadow-amber-100">
+            🫓
+          </div>
+          <div class="absolute -bottom-1 -right-1 w-9 h-9 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-xl">
+            🔥
+          </div>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl font-semibold text-stone-900 tracking-tight mb-4 leading-tight">
+          Bienvenido a la<br />
+          <span class="text-amber-600">Molletiza</span>
+        </h1>
+
+        <p class="text-stone-500 text-lg max-w-sm mb-4 leading-relaxed">
+          Una tarde de amigos, bolillos calientes y queso que no para de derretirse.
+        </p>
+
+        <p class="text-stone-400 text-sm max-w-xs mb-10">
+          Coordina que trae cada quien, vota por la fecha y preparate para el mejor mollete de tu vida.
+        </p>
+
+        <a
+          href="/login"
+          class="inline-flex items-center gap-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-base px-8 py-3.5 rounded-2xl shadow-md shadow-amber-200 hover:shadow-amber-300 active:scale-[.97] transition-all duration-150"
+        >
+          Entrar a la fiesta
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+
+        <div class="grid sm:grid-cols-3 gap-4 mt-16 max-w-xl w-full text-left">
+          <div class="bg-white border border-amber-100 rounded-2xl p-4 shadow-sm">
+            <div class="text-2xl mb-2">🎡</div>
+            <p class="text-sm font-semibold text-stone-800">Ruleta de ingredientes</p>
+            <p class="text-xs text-stone-400 mt-1">Gira y descubre que te toca traer para la Molletiza.</p>
+          </div>
+          <div class="bg-white border border-amber-100 rounded-2xl p-4 shadow-sm">
+            <div class="text-2xl mb-2">📅</div>
+            <p class="text-sm font-semibold text-stone-800">Vota por la fecha</p>
+            <p class="text-xs text-stone-400 mt-1">Elige el viernes que mas te conviene y vemos cual gana.</p>
+          </div>
+          <div class="bg-white border border-amber-100 rounded-2xl p-4 shadow-sm">
+            <div class="text-2xl mb-2">🧾</div>
+            <p class="text-sm font-semibold text-stone-800">El menu completo</p>
+            <p class="text-xs text-stone-400 mt-1">5 tipos de mollete y las cantidades exactas para 26 personas.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="relative z-10 text-center py-6 text-xs text-stone-300">
+        Molletiza · Solo para los 26 afortunados 🫓
+      </footer>
+
+    </main>
+
+    <style>
+      @keyframes float-1 {
+        0%, 100% { transform: translateY(0px) rotate(-15deg); }
+        50% { transform: translateY(-12px) rotate(-12deg); }
+      }
+      @keyframes float-2 {
+        0%, 100% { transform: translateY(0px) rotate(12deg); }
+        50% { transform: translateY(-8px) rotate(15deg); }
+      }
+      @keyframes float-3 {
+        0%, 100% { transform: translateY(0px) rotate(8deg); }
+        50% { transform: translateY(-15px) rotate(5deg); }
+      }
+      .animate-float-1 { animation: float-1 6s ease-in-out infinite; }
+      .animate-float-2 { animation: float-2 8s ease-in-out infinite; }
+      .animate-float-3 { animation: float-3 7s ease-in-out infinite; }
+    </style>
+  </Layout>
+)}
