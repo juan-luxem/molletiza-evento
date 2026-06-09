@@ -165,6 +165,7 @@ export default function Roulette(props: Props) {
         } else {
           setSpinning(false);
           setResult(winner);
+          setTimeout(() => window.location.reload(), 1800);
         }
       }
 

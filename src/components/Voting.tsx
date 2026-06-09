@@ -35,7 +35,7 @@ export default function Voting(props: Props) {
         setError(data.error ?? 'Error al votar');
       }
     } catch {
-      setError('Error de conexión');
+      setError('Error de conexion');
     } finally {
       setVoting(false);
     }
@@ -54,36 +54,35 @@ export default function Voting(props: Props) {
             <button
               onClick={() => vote(date.id)}
               disabled={voting() || isSelected()}
-              class={`w-full text-left border rounded-lg p-4 transition-all ${
+              class={`w-full text-left border rounded-2xl p-4 transition-all duration-200 ${
                 isSelected()
-                  ? 'border-zinc-900 bg-zinc-900 text-white cursor-default'
+                  ? 'border-amber-500 bg-amber-600 text-white shadow-md shadow-amber-200 cursor-default'
                   : hasVoted()
-                  ? 'border-zinc-100 bg-zinc-50 hover:border-zinc-300 text-zinc-600'
-                  : 'border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 text-zinc-900'
+                  ? 'border-amber-100 bg-white hover:border-amber-300 hover:bg-amber-50/60 text-stone-600'
+                  : 'border-stone-200 hover:border-amber-400 hover:bg-amber-50/50 text-stone-900'
               } disabled:cursor-not-allowed`}
             >
               <div class="flex items-center justify-between mb-3">
-                <span class={`font-medium ${isSelected() ? 'text-white' : ''}`}>
+                <span class={`font-medium ${isSelected() ? 'text-white' : 'text-stone-800'}`}>
                   {date.label}
                 </span>
                 <span
-                  class={`text-sm tabular-nums ${isSelected() ? 'text-zinc-300' : 'text-zinc-400'}`}
+                  class={`text-sm tabular-nums font-medium ${isSelected() ? 'text-amber-100' : 'text-amber-500'}`}
                 >
                   {date.votes} {date.votes === 1 ? 'voto' : 'votos'}
                 </span>
               </div>
 
-              {/* Barra de progreso */}
               <div
-                class={`h-1 rounded-full overflow-hidden ${isSelected() ? 'bg-white/20' : 'bg-zinc-100'}`}
+                class={`h-1.5 rounded-full overflow-hidden ${isSelected() ? 'bg-amber-500/40' : 'bg-amber-100'}`}
               >
                 <div
-                  class={`h-full rounded-full transition-all duration-500 ${isSelected() ? 'bg-white' : 'bg-zinc-400'}`}
+                  class={`h-full rounded-full transition-all duration-500 ${isSelected() ? 'bg-amber-200' : 'bg-amber-400'}`}
                   style={`width: ${pct}%`}
                 />
               </div>
 
-              <p class={`text-xs mt-1.5 ${isSelected() ? 'text-zinc-400' : 'text-zinc-400'}`}>
+              <p class={`text-xs mt-1.5 ${isSelected() ? 'text-amber-200' : 'text-stone-400'}`}>
                 {pct}%{isSelected() ? ' — tu voto' : ''}
               </p>
             </button>
@@ -96,13 +95,13 @@ export default function Voting(props: Props) {
       </Show>
 
       <Show when={!userVote() && !voting()}>
-        <p class="text-xs text-zinc-400 text-center pt-1">
+        <p class="text-xs text-stone-400 text-center pt-1">
           Haz clic en una fecha para votar
         </p>
       </Show>
 
       <Show when={userVote() && !voting()}>
-        <p class="text-xs text-zinc-400 text-center pt-1">
+        <p class="text-xs text-stone-400 text-center pt-1">
           Haz clic en otra fecha para cambiar tu voto
         </p>
       </Show>
