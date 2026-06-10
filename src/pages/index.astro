@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Roulette from '../components/Roulette';
 import Voting from '../components/Voting';
 import MenuPreview from '../components/MenuPreview';
+import { votingIsClosed } from '../lib/config';
 
 const user = Astro.locals.user;
 const supabase = Astro.locals.supabase;
@@ -43,6 +44,8 @@ if (user) {
   assignedCount = items.filter((i) => i.status === 'assigned').length;
   totalCount = items.length;
 }
+
+const closed = votingIsClosed();
 
 const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
 ---
@@ -133,10 +136,19 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
           <div class="mb-6">
             <h2 class="text-base font-semibold text-stone-900">Cuando nos vemos?</h2>
             <p class="text-sm text-stone-500 mt-0.5">
-              {userVote ? 'Tu voto fue registrado ✓' : 'Vota por tu fecha preferida'}
+              {closed
+                ? 'Votaciones cerradas — gracias a todos ✓'
+                : userVote
+                ? 'Tu voto fue registrado ✓'
+                : 'Vota por tu fecha preferida'}
             </p>
+            {!closed && (
+              <p class="text-xs text-amber-600 mt-1 font-medium">
+                Cierra mañana a las 6:00 pm hora México
+              </p>
+            )}
           </div>
-          <Voting client:load dates={dates} userVote={userVote} />
+          <Voting client:load dates={dates} userVote={userVote} votingClosed={closed} />
         </section>
       </div>
 
@@ -286,7 +298,7 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
 
         <div class="inline-flex items-center gap-2 bg-amber-100 border border-amber-200 text-amber-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-wide uppercase">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-          Evento privado · 26 invitados
+          Evento privado · 27 invitados
         </div>
 
         <div class="relative mb-8">
@@ -335,14 +347,14 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
           <div class="bg-white border border-amber-100 rounded-2xl p-4 shadow-sm">
             <div class="text-2xl mb-2">🧾</div>
             <p class="text-sm font-semibold text-stone-800">El menu completo</p>
-            <p class="text-xs text-stone-400 mt-1">5 tipos de mollete y las cantidades exactas para 26 personas.</p>
+            <p class="text-xs text-stone-400 mt-1">5 tipos de mollete y las cantidades exactas para 27 personas.</p>
           </div>
         </div>
 
       </div>
 
       <footer class="relative z-10 text-center py-6 text-xs text-stone-300">
-        Molletiza · Solo para los 26 afortunados 🫓
+        Molletiza · Solo para los 27 afortunados 🫓
       </footer>
 
     </main>

@@ -5,6 +5,7 @@ type DateOption = { id: string; label: string; votes: number };
 interface Props {
   dates: DateOption[];
   userVote: string | null;
+  votingClosed: boolean;
 }
 
 export default function Voting(props: Props) {
@@ -12,11 +13,12 @@ export default function Voting(props: Props) {
   const [userVote, setUserVote] = createSignal<string | null>(props.userVote);
   const [voting, setVoting] = createSignal(false);
   const [error, setError] = createSignal('');
+  const closed = props.votingClosed;
 
   const totalVotes = () => dates().reduce((sum, d) => sum + d.votes, 0);
 
   async function vote(dateId: string) {
-    if (voting() || dateId === userVote()) return;
+    if (closed || voting() || dateId === userVote()) return;
     setVoting(true);
     setError('');
 
@@ -53,10 +55,12 @@ export default function Voting(props: Props) {
           return (
             <button
               onClick={() => vote(date.id)}
-              disabled={voting() || isSelected()}
+              disabled={closed || voting() || isSelected()}
               class={`w-full text-left border rounded-2xl p-4 transition-all duration-200 ${
                 isSelected()
                   ? 'border-amber-500 bg-amber-600 text-white shadow-md shadow-amber-200 cursor-default'
+                  : closed
+                  ? 'border-stone-100 bg-stone-50 text-stone-400 cursor-default'
                   : hasVoted()
                   ? 'border-amber-100 bg-white hover:border-amber-300 hover:bg-amber-50/60 text-stone-600'
                   : 'border-stone-200 hover:border-amber-400 hover:bg-amber-50/50 text-stone-900'
@@ -94,13 +98,19 @@ export default function Voting(props: Props) {
         <p class="text-xs text-red-500 text-center pt-1">{error()}</p>
       </Show>
 
-      <Show when={!userVote() && !voting()}>
+      <Show when={closed}>
+        <p class="text-xs text-stone-400 text-center pt-1">
+          Las votaciones cerraron el 10 de junio a las 6:00 pm
+        </p>
+      </Show>
+
+      <Show when={!closed && !userVote() && !voting()}>
         <p class="text-xs text-stone-400 text-center pt-1">
           Haz clic en una fecha para votar
         </p>
       </Show>
 
-      <Show when={userVote() && !voting()}>
+      <Show when={!closed && userVote() && !voting()}>
         <p class="text-xs text-stone-400 text-center pt-1">
           Haz clic en otra fecha para cambiar tu voto
         </p>

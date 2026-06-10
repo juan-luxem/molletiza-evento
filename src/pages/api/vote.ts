@@ -1,11 +1,16 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { votingIsClosed } from '../../lib/config';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const user = locals.user;
 
   if (!user) {
     return Response.json({ error: 'No autenticado' }, { status: 401 });
+  }
+
+  if (votingIsClosed()) {
+    return Response.json({ error: 'Las votaciones ya cerraron.' }, { status: 403 });
   }
 
   let dateId: string;

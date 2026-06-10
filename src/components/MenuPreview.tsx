@@ -63,7 +63,7 @@ const MATEMATICAS = [
     item: 'Bolillos',
     total: '50–54 piezas',
     porPersona: '2 bolillos (4 mitades)',
-    nota: '26 personas × 2 = 52 bolillos. Pedimos un poco más por si alguien repite.',
+    nota: '27 personas × 2 = 54 bolillos. Pedimos un poco más por si alguien repite.',
   },
   {
     emoji: '🫘',
@@ -304,7 +304,7 @@ export default function MenuPreview() {
         <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
           <p class="text-sm text-amber-900 leading-relaxed">
             Calculamos <strong class="font-semibold">2 bolillos por persona</strong> (4 mitaditas c/u), lo que nos da
-            ~52 bolillos. Para cada mitad, ~29 g de frijoles y ~29 g de queso fundido es
+            ~54 bolillos. Para cada mitad, ~29 g de frijoles y ~29 g de queso fundido es
             la medida perfecta para que queden bien cargadas sin desperdiciar. Las proteínas
             las dividimos en{' '}
             <strong class="font-semibold">4 opciones</strong> para que haya variedad: el que quiera

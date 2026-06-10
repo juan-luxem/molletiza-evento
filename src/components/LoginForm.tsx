@@ -2,7 +2,6 @@ import { createSignal, Show } from 'solid-js';
 import { createBrowserClient } from '@supabase/ssr';
 
 export default function LoginForm() {
-  const [mode, setMode] = createSignal<'login' | 'signup'>('login');
   const [error, setError] = createSignal('');
   const [loading, setLoading] = createSignal(false);
 
@@ -13,27 +12,12 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    // Leer del DOM directamente — captura autofill y tipeo manual
     const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const emailVal    = (fd.get('email')     as string) ?? '';
-    const passwordVal = (fd.get('password')  as string) ?? '';
-    const nameVal     = (fd.get('full_name') as string) ?? '';
+    const emailVal    = (fd.get('email')    as string) ?? '';
+    const passwordVal = (fd.get('password') as string) ?? '';
 
     setLoading(true);
     setError('');
-
-    if (mode() === 'signup') {
-      const { error: err } = await supabase.auth.signUp({
-        email: emailVal,
-        password: passwordVal,
-        options: { data: { full_name: nameVal } },
-      });
-      if (err) {
-        setError(err.message);
-        setLoading(false);
-        return;
-      }
-    }
 
     const { error: err } = await supabase.auth.signInWithPassword({
       email: emailVal,
@@ -53,21 +37,6 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} class="space-y-4">
-      <Show when={mode() === 'signup'}>
-        <div>
-          <label class="block text-xs font-medium text-stone-500 mb-1.5 tracking-wide uppercase">
-            Nombre
-          </label>
-          <input
-            name="full_name"
-            type="text"
-            required={mode() === 'signup'}
-            placeholder="Tu nombre completo"
-            class={inputClass}
-          />
-        </div>
-      </Show>
-
       <div>
         <label class="block text-xs font-medium text-stone-500 mb-1.5 tracking-wide uppercase">
           Correo electronico
@@ -106,22 +75,8 @@ export default function LoginForm() {
         disabled={loading()}
         class="w-full py-3 px-4 bg-amber-600 text-white text-sm font-semibold rounded-xl hover:bg-amber-700 active:scale-[.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
       >
-        {loading() ? 'Un momento...' : mode() === 'login' ? 'Entrar a la Molletiza' : 'Crear cuenta'}
+        {loading() ? 'Un momento...' : 'Entrar a la Molletiza'}
       </button>
-
-      <p class="text-center text-xs text-stone-400">
-        {mode() === 'login' ? 'No tienes cuenta?' : 'Ya tienes cuenta?'}{' '}
-        <button
-          type="button"
-          onClick={() => {
-            setMode((m) => (m === 'login' ? 'signup' : 'login'));
-            setError('');
-          }}
-          class="text-amber-600 hover:text-amber-800 underline underline-offset-2 transition-colors"
-        >
-          {mode() === 'login' ? 'Registrate' : 'Inicia sesion'}
-        </button>
-      </p>
     </form>
   );
 }
