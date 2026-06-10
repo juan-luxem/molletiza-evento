@@ -112,7 +112,7 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
 
       <!-- Ruleta + Votacion -->
       <div class="grid md:grid-cols-2 gap-10 mb-14">
-        <section>
+        <section id="tour-ruleta">
           <div class="mb-6">
             <h2 class="text-base font-semibold text-stone-900">Tu ingrediente</h2>
             <p class="text-sm text-stone-500 mt-0.5">
@@ -129,7 +129,7 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
           />
         </section>
 
-        <section>
+        <section id="tour-votacion">
           <div class="mb-6">
             <h2 class="text-base font-semibold text-stone-900">Cuando nos vemos?</h2>
             <p class="text-sm text-stone-500 mt-0.5">
@@ -192,6 +192,81 @@ const HORNO = ['Juan Torrentera', 'Lili', 'Juan', 'Luis Aldana'];
       </section>
 
     </main>
+
+    <script>
+      import { driver } from 'driver.js';
+      import 'driver.js/dist/driver.css';
+
+      const TOUR_KEY = 'molletiza_tour_v1';
+
+      if (!localStorage.getItem(TOUR_KEY)) {
+        // Esperar a que los islands de SolidJS monten
+        setTimeout(() => {
+          const tour = driver({
+            animate: true,
+            overlayOpacity: 0.65,
+            stagePadding: 10,
+            allowClose: true,
+            nextBtnText: 'Siguiente →',
+            prevBtnText: '← Anterior',
+            doneBtnText: '¡Listo! 🫓',
+            onDestroyStarted: () => {
+              localStorage.setItem(TOUR_KEY, '1');
+              tour.destroy();
+            },
+            steps: [
+              {
+                element: 'header',
+                popover: {
+                  title: '👋 Bienvenido a la Molletiza',
+                  description: 'Tu app para organizar el evento. Tour rápido de todo lo que puedes hacer aquí.',
+                  side: 'bottom',
+                  align: 'start',
+                },
+              },
+              {
+                element: '#tour-ruleta',
+                popover: {
+                  title: '🎡 La ruleta',
+                  description: 'Gira la ruleta para que te asignen qué ingrediente traes. Solo se gira una vez — ¡sin trampas!',
+                  side: 'right',
+                  align: 'start',
+                },
+              },
+              {
+                element: '#tour-votacion',
+                popover: {
+                  title: '📅 Elige la fecha',
+                  description: 'Vota por el viernes que más te conviene. Puedes cambiar tu voto cuando quieras.',
+                  side: 'left',
+                  align: 'start',
+                },
+              },
+              {
+                element: '#menu',
+                popover: {
+                  title: '🫓 El menú del día',
+                  description: '5 tipos de mollete. Toca cada card para ver fotos del platillo y sus ingredientes.',
+                  side: 'top',
+                  align: 'center',
+                },
+              },
+              {
+                element: '#asignaciones',
+                popover: {
+                  title: '🧾 Quién trae qué',
+                  description: 'Ve en tiempo real qué trae cada quien. Tu asignación aparece resaltada en ámbar.',
+                  side: 'top',
+                  align: 'center',
+                },
+              },
+            ],
+          });
+
+          tour.drive();
+        }, 800);
+      }
+    </script>
   </Layout>
 ) : (
   <Layout title="Molletiza — Bienvenido 🫓">

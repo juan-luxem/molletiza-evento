@@ -3,3 +3,84 @@
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
 }
+
+/* ── Driver.js tour — paleta Molletiza ── */
+.driver-popover {
+  background: #fffcf5 !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 40px -8px rgba(120, 53, 15, 0.15) !important;
+  font-family: "Inter", system-ui, sans-serif !important;
+  max-width: 320px !important;
+}
+
+.driver-popover-title {
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: #1c1917 !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.driver-popover-description {
+  font-size: 0.8125rem !important;
+  color: #78716c !important;
+  line-height: 1.55 !important;
+}
+
+.driver-popover-footer {
+  margin-top: 1rem !important;
+  gap: 0.5rem !important;
+}
+
+.driver-popover-next-btn,
+.driver-popover-done-btn {
+  background: #d97706 !important;
+  border: none !important;
+  border-radius: 0.625rem !important;
+  color: #fff !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  padding: 0.45rem 1rem !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-done-btn:hover {
+  background: #b45309 !important;
+}
+
+.driver-popover-prev-btn {
+  background: transparent !important;
+  border: 1px solid #e7e5e4 !important;
+  border-radius: 0.625rem !important;
+  color: #78716c !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  padding: 0.45rem 1rem !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+  border-color: #d6d3d1 !important;
+  color: #1c1917 !important;
+}
+
+.driver-popover-close-btn {
+  color: #a8a29e !important;
+  font-size: 1.1rem !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #1c1917 !important;
+}
+
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: #fde68a !important;
+}
+
+.driver-popover-progress-text {
+  color: #a8a29e !important;
+  font-size: 0.75rem !important;
+}
